@@ -18,7 +18,9 @@ struct RingUp: Identifiable, Equatable {
     var platform: String  // e.g., "Discord", "WhatsApp", etc.
     var frequency: Frequency
     var customMonthInterval: Int?  // For the "Every X Months" option
-    var reminderTime: Date
+    
+    /// The exact date/time of the *next* reminder.
+    var nextReminderDate: Date
     
     init(
         id: UUID = UUID(),
@@ -26,19 +28,19 @@ struct RingUp: Identifiable, Equatable {
         platform: String,
         frequency: Frequency,
         customMonthInterval: Int? = nil,
-        reminderTime: Date
+        nextReminderDate: Date
     ) {
         self.id = id
         self.name = name
         self.platform = platform
         self.frequency = frequency
         self.customMonthInterval = customMonthInterval
-        self.reminderTime = reminderTime
+        self.nextReminderDate = nextReminderDate
     }
 }
 
 struct RingUpPreview: View {
-    let reminder = RingUp(name: "Aspen", platform: "Messenger", frequency: .monthly, reminderTime: Date())
+    let reminder = RingUp(name: "Aspen", platform: "Messenger", frequency: .monthly, nextReminderDate: Date())
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -48,7 +50,7 @@ struct RingUpPreview: View {
                 .font(.subheadline)
             Text("Frequency: \(reminder.frequency.rawValue)")
                 .font(.subheadline)
-            Text("Reminder Time: \(DateFormatter.localizedString(from: reminder.reminderTime, dateStyle: .medium, timeStyle: .short))")
+            Text("Reminder Time: \(DateFormatter.localizedString(from: reminder.nextReminderDate, dateStyle: .medium, timeStyle: .short))")
                 .font(.subheadline)
         }
         .padding()

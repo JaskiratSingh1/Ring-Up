@@ -10,9 +10,11 @@ struct AddOrEditRingUpView: View {
     @State private var platform: String = ""
     @State private var frequency: Frequency = .weekly
     @State private var customMonthInterval: Int = 3
-    @State private var reminderTime: Date = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
     
-    let platforms = ["Messages", "Snapchat", "Instagram", "Facebook", "Discord", "WhatsApp", "Telegram", "Other"]
+    /// The user's chosen next date/time for the reminder
+    @State private var nextReminderDate: Date = Date()
+    
+    let platforms = ["Discord", "WhatsApp", "Telegram", "Messages", "Other"]
     
     var body: some View {
         NavigationView {
@@ -46,8 +48,9 @@ struct AddOrEditRingUpView: View {
                     }
                 }
                 
-                Section("Reminder Time") {
-                    DatePicker("Time", selection: $reminderTime, displayedComponents: .hourAndMinute)
+                Section("Next Reminder Date & Time") {
+                    DatePicker("Next Reminder", selection: $nextReminderDate, displayedComponents: [.date, .hourAndMinute])
+                        .environment(\.locale, Locale(identifier: "en_US_POSIX"))
                 }
                 
                 Section {
@@ -74,7 +77,13 @@ struct AddOrEditRingUpView: View {
                     if let customInterval = existingRingUp.customMonthInterval {
                         customMonthInterval = customInterval
                     }
-                    reminderTime = existingRingUp.reminderTime
+                    nextReminderDate = existingRingUp.nextReminderDate
+                } else {
+                    // If creating new, default nextReminderDate to tomorrow at 9 AM, for example
+                    var comps = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+                    comps.hour = 9
+                    comps.minute = 0
+                    nextReminderDate = Calendar.current.date(from: comps) ?? Date()
                 }
             }
         }
@@ -87,14 +96,14 @@ struct AddOrEditRingUpView: View {
             platform: platform,
             frequency: frequency,
             customMonthInterval: frequency == .customMonths ? customMonthInterval : nil,
-            reminderTime: reminderTime
+            nextReminderDate: nextReminderDate
         )
         
         ringUpManager.saveRingUp(newRingUp)
         dismiss()
     }
 }
-
+/*
 #Preview {
     // Sample data for preview
     let sampleReminder = RingUp(
@@ -117,3 +126,4 @@ struct AddOrEditRingUpView: View {
     }
     .padding()
 }
+*/

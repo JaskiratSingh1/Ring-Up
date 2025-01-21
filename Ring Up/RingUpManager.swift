@@ -1,3 +1,8 @@
+/*
+ * The purpose of this file is to manage "Ring Ups".
+ * Adding, deleting, updating ringups.
+ */
+
 import SwiftUI
 import Combine
 
@@ -27,8 +32,6 @@ class RingUpManager: ObservableObject {
     }
     
     /// Returns ringUps grouped by frequency.
-    /// If you need more complex grouping (e.g., daily, weekly, monthly, 3 months, 6 months, etc.),
-    /// adapt this to handle custom intervals.
     func groupedRingUps() -> [Frequency: [RingUp]] {
         var dict: [Frequency: [RingUp]] = [:]
         

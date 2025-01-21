@@ -22,16 +22,24 @@ struct ContentView: View {
                                 NavigationLink(
                                     destination: AddOrEditRingUpView(ringUpManager: ringUpManager, ringUp: ringUp)
                                 ) {
-                                    HStack {
-                                        // Use the platform icon if you want:
-                                        // Image(ringUp.platform.lowercased())
-                                        //     .resizable()
-                                        //     .frame(width: 24, height: 24)
+                                    VStack(alignment: .leading) {
+                                        HStack {
+                                            // Optional: use platform icon:
+                                            // Image(ringUp.platform.lowercased())
+                                            //     .resizable()
+                                            //     .frame(width: 24, height: 24)
+                                            
+                                            Text(ringUp.name)
+                                                .font(.body)
+                                            Spacer()
+                                            Text(ringUp.platform)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .padding(.vertical, 2)
                                         
-                                        Text(ringUp.name)
-                                            .font(.body)
-                                        Spacer()
-                                        Text(ringUp.platform)
+                                        // Show next reminder date
+                                        Text("Next reminder: \(ringUp.nextReminderDate, style: .date) at \(ringUp.nextReminderDate, style: .time)")
+                                            .font(.caption)
                                             .foregroundColor(.secondary)
                                     }
                                     .padding(.horizontal)

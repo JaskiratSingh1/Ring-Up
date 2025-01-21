@@ -1,3 +1,8 @@
+/*
+ The purpose of this file is to handle notifications.
+ It handles requesting for notification autherization, scheduling notifications, and deleting them.
+ */
+
 import SwiftUI
 import UserNotifications
 
@@ -27,24 +32,52 @@ class NotificationManager {
         content.body = "It's time to talk to \(ringUp.name) on \(ringUp.platform)."
         content.sound = .default
         
-        // Extract hour/minute from ringUp.reminderTime
+        // Extract year, month, day, hour, minute from ringUp.nextReminderDate
         let calendar = Calendar.current
-        let hour = calendar.component(.hour, from: ringUp.reminderTime)
-        let minute = calendar.component(.minute, from: ringUp.reminderTime)
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute],
+                                                 from: ringUp.nextReminderDate)
         
-        // Create trigger – for demonstration, we do daily.
-        // If you want more dynamic scheduling (weekly, monthly, etc.), you will need more advanced logic.
-        // For now, let's schedule a repeating trigger daily at that time.
-        var dateComponents = DateComponents()
-        dateComponents.hour = hour
-        dateComponents.minute = minute
+        // Decide if the notification repeats based on frequency
+        // For demonstration:
+        //  - daily: repeats every day (ignores year/month/day, but uses hour/minute)
+        //  - weekly: repeats every week (ignores year/month/day, uses weekday/hour/minute)
+        //  - monthly/yearly/custom: you’ll need more custom logic.
         
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+        var dateComponents = components
+        var repeats = false
         
-        // Create request
-        let request = UNNotificationRequest(identifier: ringUp.id.uuidString, content: content, trigger: trigger)
+        switch ringUp.frequency {
+        case .daily:
+            // For daily repeating, ignore the year/month/day, use hour/minute only
+            dateComponents = DateComponents(hour: components.hour, minute: components.minute)
+            repeats = true
+        case .weekly:
+            // For weekly repeating, also capture the weekday
+            // e.g., if nextReminderDate is a Wednesday, keep that
+            let weekday = calendar.component(.weekday, from: ringUp.nextReminderDate)
+            dateComponents = DateComponents(hour: components.hour, minute: components.minute, weekday: weekday)
+            repeats = true
+        case .monthly:
+            // For monthly repeating, keep day of month + hour/minute
+            dateComponents = DateComponents(day: components.day, hour: components.hour, minute: components.minute)
+            repeats = true
+        case .yearly:
+            // For yearly repeating, keep month/day + hour/minute
+            dateComponents = DateComponents(month: components.month, day: components.day,
+                                            hour: components.hour, minute: components.minute)
+            repeats = true
+        case .customMonths:
+            // Harder to schedule repeating. For demonstration, schedule one-time only.
+            // You could dynamically re-schedule next time after the notification fires.
+            repeats = false
+        }
         
-        // Schedule
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: repeats)
+        
+        let request = UNNotificationRequest(identifier: ringUp.id.uuidString,
+                                            content: content,
+                                            trigger: trigger)
+        
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Error scheduling notification: \(error.localizedDescription)")
